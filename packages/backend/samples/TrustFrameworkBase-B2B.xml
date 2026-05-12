@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkBase_B2B">
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="email"><DisplayName>Email</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="objectId"><DisplayName>Object ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="displayName"><DisplayName>Display Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="invitationId"><DisplayName>Invitation ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="companyName"><DisplayName>Company Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="jobTitle"><DisplayName>Job Title</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="phoneNumber"><DisplayName>Phone Number</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateB2BDisplayName" TransformationMethod="FormatStringMultipleClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="companyName" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="jobTitle" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0} - {1}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="displayName" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>B2B Accounts</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-EmailInviteCode">
+          <DisplayName>Collect Invite Code</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/b2b-invite.html</Item></Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="invitationId" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingEmailAddress-B2B">
+          <DisplayName>Read B2B User By Email</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="email" Required="true" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="companyName" />
+            <OutputClaim ClaimTypeReferenceId="jobTitle" />
+            <OutputClaim ClaimTypeReferenceId="phoneNumber" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteInvitationUser">
+          <DisplayName>Create Invited B2B User</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" Required="true" />
+            <InputClaim ClaimTypeReferenceId="invitationId" Required="true" />
+            <InputClaim ClaimTypeReferenceId="companyName" />
+            <InputClaim ClaimTypeReferenceId="jobTitle" />
+          </InputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateB2BDisplayName" /></OutputClaimsTransformations>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="PhoneFactor-StepUp">
+          <DisplayName>Step-up Phone Verification</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.PhoneFactorProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="phoneNumber" Required="true" /></InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="phoneNumber" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="JwtIssuer-B2B">
+          <DisplayName>B2B JWT Issuer</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="companyName" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>

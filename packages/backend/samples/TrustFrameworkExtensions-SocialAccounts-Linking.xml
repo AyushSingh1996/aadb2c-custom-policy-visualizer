@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions_SocialAccounts_Linking">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkBase_SocialAccounts</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="socialLinkStatus"><DisplayName>Social Link Status</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Social Linking Services</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="REST-LinkSocialAccount">
+          <DisplayName>Link Existing Social Account</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/social/link</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="socialLinkStatus" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-CreateSocialProfile">
+          <DisplayName>Create Social Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/social/profile</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="email" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="socialLinkStatus" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-SocialProfileCompletion">
+          <DisplayName>Complete Social Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/social-profile.html</Item></Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateSocialDisplayName" /></OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="SignInSocial">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.socialsignin">
+          <ClaimsProviderSelections><ClaimsProviderSelection TargetClaimsExchangeId="SocialSigninExchange" /></ClaimsProviderSelections>
+          <ClaimsExchanges><ClaimsExchange Id="SocialSigninExchange" TechnicalProfileReferenceId="Facebook-OAUTH" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadLinkedUser" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="LinkSocialAccount" TechnicalProfileReferenceId="REST-LinkSocialAccount" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer-Social" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="SignUpSocial">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.socialsignup">
+          <ClaimsProviderSelections><ClaimsProviderSelection TargetClaimsExchangeId="SocialSignupExchange" /></ClaimsProviderSelections>
+          <ClaimsExchanges><ClaimsExchange Id="SocialSignupExchange" TechnicalProfileReferenceId="Google-OAUTH" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CompleteSocialProfile" TechnicalProfileReferenceId="SelfAsserted-SocialProfileCompletion" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CreateSocialUser" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CreateSocialProfileRecord" TechnicalProfileReferenceId="REST-CreateSocialProfile" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer-Social" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

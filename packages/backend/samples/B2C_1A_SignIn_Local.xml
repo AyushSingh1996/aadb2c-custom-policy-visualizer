@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_SignIn_Local">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions_LocalAccounts_MFA</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignInLocal" />
+    <Endpoints>
+      <Endpoint Id="Token"><Description>Local sign-in with loyalty enrichment and risk scoring.</Description></Endpoint>
+    </Endpoints>
+  </RelyingParty>
+</TrustFrameworkPolicy>

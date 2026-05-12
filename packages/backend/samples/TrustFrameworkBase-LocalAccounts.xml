@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkBase_LocalAccounts">
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="email"><DisplayName>Email</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="objectId"><DisplayName>Object ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="displayName"><DisplayName>Display Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="signInName"><DisplayName>Sign In Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="password"><DisplayName>Password</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="newPassword"><DisplayName>New Password</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="reenterPassword"><DisplayName>Re-enter Password</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="givenName"><DisplayName>Given Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="surname"><DisplayName>Surname</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="phoneNumber"><DisplayName>Phone Number</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="authenticationSource"><DisplayName>Authentication Source</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateDisplayName" TransformationMethod="FormatStringMultipleClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="givenName" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="surname" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0} {1}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="displayName" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata>
+            <Item Key="LoadUri">https://cdn.contoso.com/templates/local-signin.html</Item>
+          </Metadata>
+          <InputClaims><InputClaim ClaimTypeReferenceId="signInName" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="AAD-UserReadUsingEmailAddress" />
+          </ValidationTechnicalProfiles>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+          <DisplayName>Read User By Object Id</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="objectId" Required="true" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="phoneNumber" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingEmailAddress">
+          <DisplayName>Read User By Email</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="email" Required="true" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="phoneNumber" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail">
+          <DisplayName>Create Local Account</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" Required="true" />
+            <InputClaim ClaimTypeReferenceId="password" Required="true" />
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+          </InputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreateDisplayName" />
+          </OutputClaimsTransformations>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWritePasswordUsingObjectId">
+          <DisplayName>Reset Password</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+            <InputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+            <InputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="objectId" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="PhoneFactor-Verify">
+          <DisplayName>Verify Phone Number</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.PhoneFactorProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="phoneNumber" Required="true" /></InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="phoneNumber" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="JwtIssuer">
+          <DisplayName>JWT Issuer</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_OverrideBase">
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="email"><DisplayName>Email</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="country"><DisplayName>Country</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="displayName"><DisplayName>Display Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="objectId"><DisplayName>Object ID</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateDisplayName" TransformationMethod="FormatString">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="inputClaim1" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string">{0}</InputParameter>
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="displayName" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+    <Localization>
+      <SupportedLanguages><SupportedLanguage>en</SupportedLanguage></SupportedLanguages>
+      <LocalizedResources Id="api.signup.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="heading">Base Heading</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+    </Localization>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="TP-Shared">
+          <DisplayName>Base Shared</DisplayName>
+          <Protocol Name="Proprietary" Handler="BaseHandler" />
+          <Metadata>
+            <Item Key="A">one</Item>
+            <Item Key="B">two</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_BaseSecret" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" DefaultValue="base@example.com" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="country" DefaultValue="US" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="Validate-Base" />
+          </ValidationTechnicalProfiles>
+          <IncludeTechnicalProfile ReferenceId="Base-Helper" />
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Base" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="Protocol-Swap">
+          <Protocol Name="OpenIdConnect" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="Validate-Base"><Protocol Name="None" /></TechnicalProfile>
+        <TechnicalProfile Id="Base-Helper"><Protocol Name="None" /></TechnicalProfile>
+        <TechnicalProfile Id="SM-Base"><Protocol Name="None" /></TechnicalProfile>
+        <TechnicalProfile Id="JwtIssuer"><Protocol Name="OpenIdConnect" /></TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="SignIn">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="BaseExchange" TechnicalProfileReferenceId="TP-Shared" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkBase_SocialAccounts">
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="email"><DisplayName>Email</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="objectId"><DisplayName>Object ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="displayName"><DisplayName>Display Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="givenName"><DisplayName>Given Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="surname"><DisplayName>Surname</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="alternativeSecurityId"><DisplayName>Alternative Security Id</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="socialIdentityProvider"><DisplayName>Social Identity Provider</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CreateSocialDisplayName" TransformationMethod="FormatStringMultipleClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="givenName" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="surname" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0} {1}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="displayName" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Social Identity Providers</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Facebook-OAUTH">
+          <DisplayName>Facebook Sign In</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <Metadata><Item Key="METADATA">https://login.contoso.com/facebook/.well-known/openid-configuration</Item></Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="socialIdentityProvider" DefaultValue="facebook" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="Google-OAUTH">
+          <DisplayName>Google Sign In</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <Metadata><Item Key="METADATA">https://accounts.google.com/.well-known/openid-configuration</Item></Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="socialIdentityProvider" DefaultValue="google" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
+          <DisplayName>Read Social User</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims><InputClaim ClaimTypeReferenceId="alternativeSecurityId" Required="true" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteUsingAlternativeSecurityId">
+          <DisplayName>Create Social Account</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="alternativeSecurityId" Required="true" />
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+          </InputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateSocialDisplayName" /></OutputClaimsTransformations>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="JwtIssuer-Social">
+          <DisplayName>Social JWT Issuer</DisplayName>
+          <Protocol Name="OpenIdConnect" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="socialIdentityProvider" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>

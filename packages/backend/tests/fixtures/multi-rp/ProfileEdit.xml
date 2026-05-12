@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_ProfileEdit">
+  <BasePolicy><TenantId>contoso.onmicrosoft.com</TenantId><PolicyId>B2C_1A_Extensions</PolicyId></BasePolicy>
+  <RelyingParty><DefaultUserJourney ReferenceId="ProfileEdit" /></RelyingParty>
+</TrustFrameworkPolicy>

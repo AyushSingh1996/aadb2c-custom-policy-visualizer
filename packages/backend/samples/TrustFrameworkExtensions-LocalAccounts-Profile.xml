@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions_LocalAccounts_Profile">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkBase_LocalAccounts</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="city"><DisplayName>City</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="country"><DisplayName>Country</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="consentVersion"><DisplayName>Consent Version</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="marketingPreference"><DisplayName>Marketing Preference</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Profile Services</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-ProfileEdit-Basic">
+          <DisplayName>Basic Profile Edit</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/profile-basic.html</Item></Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="city" />
+            <OutputClaim ClaimTypeReferenceId="country" />
+          </OutputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateDisplayName" /></OutputClaimsTransformations>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-ProfileEdit-Advanced">
+          <DisplayName>Advanced Profile Edit</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/profile-advanced.html</Item></Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+            <InputClaim ClaimTypeReferenceId="city" />
+            <InputClaim ClaimTypeReferenceId="country" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+            <OutputClaim ClaimTypeReferenceId="city" />
+            <OutputClaim ClaimTypeReferenceId="country" />
+            <OutputClaim ClaimTypeReferenceId="marketingPreference" />
+            <OutputClaim ClaimTypeReferenceId="consentVersion" DefaultValue="v3" />
+          </OutputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateDisplayName" /></OutputClaimsTransformations>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-ConsentManagement">
+          <DisplayName>Consent Management</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/consent-center.html</Item></Metadata>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="marketingPreference" />
+            <OutputClaim ClaimTypeReferenceId="consentVersion" DefaultValue="v3" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="AAD-UserWriteProfileUsingObjectId">
+          <DisplayName>Write Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider" />
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+            <InputClaim ClaimTypeReferenceId="givenName" />
+            <InputClaim ClaimTypeReferenceId="surname" />
+            <InputClaim ClaimTypeReferenceId="displayName" />
+            <InputClaim ClaimTypeReferenceId="city" />
+            <InputClaim ClaimTypeReferenceId="country" />
+            <InputClaim ClaimTypeReferenceId="marketingPreference" />
+            <InputClaim ClaimTypeReferenceId="consentVersion" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-PreferenceCenter">
+          <DisplayName>Preference Center Sync</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/preferences/sync</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="marketingPreference" />
+            <InputClaim ClaimTypeReferenceId="consentVersion" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="consentVersion" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-ConsentRecorder">
+          <DisplayName>Consent Recorder</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/consent/record</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="consentVersion" />
+            <InputClaim ClaimTypeReferenceId="marketingPreference" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="consentVersion" /></OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="ProfileEditBasic">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadCurrentProfile" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="EditBasicProfile" TechnicalProfileReferenceId="SelfAsserted-ProfileEdit-Basic" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="WriteBasicProfile" TechnicalProfileReferenceId="AAD-UserWriteProfileUsingObjectId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="ProfileEditAdvanced">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadAdvancedProfile" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CollectAdvancedProfile" TechnicalProfileReferenceId="SelfAsserted-ProfileEdit-Advanced" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="SyncPreferences" TechnicalProfileReferenceId="REST-PreferenceCenter" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="WriteAdvancedProfile" TechnicalProfileReferenceId="AAD-UserWriteProfileUsingObjectId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="ConsentManagement">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadConsentProfile" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CollectConsent" TechnicalProfileReferenceId="SelfAsserted-ConsentManagement" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="RecordConsent" TechnicalProfileReferenceId="REST-ConsentRecorder" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

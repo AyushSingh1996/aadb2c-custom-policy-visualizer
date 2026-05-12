@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_ConsentManagement">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions_LocalAccounts_Profile</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="ConsentManagement" />
+    <Endpoints>
+      <Endpoint Id="Token"><Description>Consent capture and preference recording for local accounts.</Description></Endpoint>
+    </Endpoints>
+  </RelyingParty>
+</TrustFrameworkPolicy>

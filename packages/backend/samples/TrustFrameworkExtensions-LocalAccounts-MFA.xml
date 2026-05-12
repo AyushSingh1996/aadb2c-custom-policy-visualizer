@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions_LocalAccounts_MFA">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkBase_LocalAccounts</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="riskLevel"><DisplayName>Risk Level</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="mfaPhoneNumber"><DisplayName>MFA Phone Number</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="extension_loyaltyId"><DisplayName>Loyalty ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="extension_deviceId"><DisplayName>Device ID</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="CopyPhoneToMfa" TransformationMethod="CopyClaim">
+        <InputClaims><InputClaim ClaimTypeReferenceId="phoneNumber" TransformationClaimType="inputClaim" /></InputClaims>
+        <OutputClaims><OutputClaim ClaimTypeReferenceId="mfaPhoneNumber" TransformationClaimType="outputClaim" /></OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Security Services</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="REST-RiskEvaluation">
+          <DisplayName>Risk Evaluation</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/risk/local-signin</Item>
+            <Item Key="AuthenticationType">ClientCertificate</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="email" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="riskLevel" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-GetLoyaltyProfile">
+          <DisplayName>Get Loyalty Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/loyalty/profile</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims><InputClaim ClaimTypeReferenceId="objectId" /></InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="extension_loyaltyId" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-RegisterMfaDevice">
+          <DisplayName>Register MFA Device</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/mfa/devices/register</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="mfaPhoneNumber" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="extension_deviceId" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-ResetMfaDevice">
+          <DisplayName>Reset MFA Device</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/mfa/devices/reset</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims><InputClaim ClaimTypeReferenceId="objectId" /></InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="extension_deviceId" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-CollectPhoneForMfa">
+          <DisplayName>Collect MFA Phone</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata>
+            <Item Key="LoadUri">https://cdn.contoso.com/templates/mfa-enrollment.html</Item>
+          </Metadata>
+          <InputClaims><InputClaim ClaimTypeReferenceId="phoneNumber" /></InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="phoneNumber" />
+            <OutputClaim ClaimTypeReferenceId="mfaPhoneNumber" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CopyPhoneToMfa" />
+          </OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="SignInLocal">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.localaccountsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection ValidationClaimsExchangeId="SigninExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SigninExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="LoyaltyProfileExchange" TechnicalProfileReferenceId="REST-GetLoyaltyProfile" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="RiskEvaluationExchange" TechnicalProfileReferenceId="REST-RiskEvaluation" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="ReadProfileExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="PasswordResetLocal">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="ReadAccountByEmail" TechnicalProfileReferenceId="AAD-UserReadUsingEmailAddress" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="WriteResetPassword" TechnicalProfileReferenceId="AAD-UserWritePasswordUsingObjectId" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="MFAEnrollment">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="ReadExistingProfile" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="CollectPhoneForMfa" TechnicalProfileReferenceId="SelfAsserted-CollectPhoneForMfa" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="VerifyMfaPhone" TechnicalProfileReferenceId="PhoneFactor-Verify" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="RegisterMfaDevice" TechnicalProfileReferenceId="REST-RegisterMfaDevice" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="MFAReset">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="ReadMfaProfile" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="ResetExistingDevice" TechnicalProfileReferenceId="REST-ResetMfaDevice" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="CollectReplacementPhone" TechnicalProfileReferenceId="SelfAsserted-CollectPhoneForMfa" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="VerifyReplacementPhone" TechnicalProfileReferenceId="PhoneFactor-Verify" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <ClaimsExchanges><ClaimsExchange Id="RegisterReplacementDevice" TechnicalProfileReferenceId="REST-RegisterMfaDevice" /></ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

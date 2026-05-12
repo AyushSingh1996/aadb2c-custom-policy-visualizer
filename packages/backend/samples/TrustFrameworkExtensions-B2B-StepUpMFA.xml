@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions_B2B_StepUpMFA">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkBase_B2B</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="stepUpReason"><DisplayName>Step-up Reason</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>B2B Step-up Services</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="REST-StepUpRiskSignal">
+          <DisplayName>Step-up Risk Signal</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/b2b/risk/stepup</Item>
+            <Item Key="AuthenticationType">ClientCertificate</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="email" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="stepUpReason" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-StepUpPhone">
+          <DisplayName>Collect Step-up Phone</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/b2b-stepup.html</Item></Metadata>
+          <InputClaims><InputClaim ClaimTypeReferenceId="phoneNumber" /></InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="phoneNumber" /></OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="StepUpMFA">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CollectB2BIdentity" TechnicalProfileReferenceId="SelfAsserted-EmailInviteCode" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadB2BProfile" TechnicalProfileReferenceId="AAD-UserReadUsingEmailAddress-B2B" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="EvaluateStepUpRisk" TechnicalProfileReferenceId="REST-StepUpRiskSignal" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CollectStepUpPhone" TechnicalProfileReferenceId="SelfAsserted-StepUpPhone" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="5" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="VerifyStepUpPhone" TechnicalProfileReferenceId="PhoneFactor-StepUp" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer-B2B" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkExtensions_B2B_Invitations">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkBase_B2B</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="invitationStatus"><DisplayName>Invitation Status</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="invitationAuditId"><DisplayName>Invitation Audit Id</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>B2B Invitation Services</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="REST-ValidateInvitation">
+          <DisplayName>Validate Invitation</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/b2b/invitations/validate</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="invitationId" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="invitationStatus" />
+            <OutputClaim ClaimTypeReferenceId="companyName" />
+            <OutputClaim ClaimTypeReferenceId="jobTitle" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="REST-SendInvitationAudit">
+          <DisplayName>Send Invitation Audit</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/b2b/invitations/audit</Item>
+            <Item Key="AuthenticationType">Bearer</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" />
+            <InputClaim ClaimTypeReferenceId="invitationStatus" />
+          </InputClaims>
+          <OutputClaims><OutputClaim ClaimTypeReferenceId="invitationAuditId" /></OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="SelfAsserted-B2BProfile">
+          <DisplayName>Complete Invited Profile</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata><Item Key="LoadUri">https://cdn.contoso.com/templates/b2b-profile.html</Item></Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="companyName" />
+            <InputClaim ClaimTypeReferenceId="jobTitle" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="companyName" />
+            <OutputClaim ClaimTypeReferenceId="jobTitle" />
+            <OutputClaim ClaimTypeReferenceId="displayName" />
+          </OutputClaims>
+          <OutputClaimsTransformations><OutputClaimsTransformation ReferenceId="CreateB2BDisplayName" /></OutputClaimsTransformations>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="SignUpInviteOnly">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CollectInviteCode" TechnicalProfileReferenceId="SelfAsserted-EmailInviteCode" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ValidateInvitation" TechnicalProfileReferenceId="REST-ValidateInvitation" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CompleteInvitedProfile" TechnicalProfileReferenceId="SelfAsserted-B2BProfile" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="CreateInvitedUser" TechnicalProfileReferenceId="AAD-UserWriteInvitationUser" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="5" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="AuditInvitation" TechnicalProfileReferenceId="REST-SendInvitationAudit" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer-B2B" />
+      </OrchestrationSteps>
+    </UserJourney>
+    <UserJourney Id="SignInB2B">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange"><ClaimsExchanges><ClaimsExchange Id="ReadB2BAccount" TechnicalProfileReferenceId="AAD-UserReadUsingEmailAddress-B2B" /></ClaimsExchanges></OrchestrationStep>
+        <OrchestrationStep Order="2" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer-B2B" />
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+</TrustFrameworkPolicy>

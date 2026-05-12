@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_SignUp_InviteOnly">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions_B2B_Invitations</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignUpInviteOnly" />
+    <Endpoints>
+      <Endpoint Id="Token"><Description>Invite-only B2B onboarding with validation and audit logging.</Description></Endpoint>
+    </Endpoints>
+  </RelyingParty>
+</TrustFrameworkPolicy>

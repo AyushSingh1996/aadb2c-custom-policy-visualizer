@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_L4"><BasePolicy><TenantId>contoso.onmicrosoft.com</TenantId><PolicyId>B2C_1A_L3</PolicyId></BasePolicy></TrustFrameworkPolicy>

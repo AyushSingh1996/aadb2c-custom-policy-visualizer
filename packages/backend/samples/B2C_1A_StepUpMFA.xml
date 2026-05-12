@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_StepUpMFA">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions_B2B_StepUpMFA</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="StepUpMFA" />
+    <Endpoints>
+      <Endpoint Id="Token"><Description>Step-up MFA for sensitive B2B actions.</Description></Endpoint>
+    </Endpoints>
+  </RelyingParty>
+</TrustFrameworkPolicy>

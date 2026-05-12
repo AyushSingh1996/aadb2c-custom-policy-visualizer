@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_SignUp_Social">
+  <BasePolicy>
+    <TenantId>contoso.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions_SocialAccounts_Linking</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignUpSocial" />
+    <Endpoints>
+      <Endpoint Id="Token"><Description>Social sign-up with profile completion and downstream provisioning.</Description></Endpoint>
+    </Endpoints>
+  </RelyingParty>
+</TrustFrameworkPolicy>

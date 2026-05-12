@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_OverrideRP">
+  <BasePolicy><TenantId>contoso.onmicrosoft.com</TenantId><PolicyId>B2C_1A_OverrideExtensions</PolicyId></BasePolicy>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="TP-Shared">
+          <Metadata>
+            <Item Key="B">rp-two</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_RpSecret" />
+          </CryptographicKeys>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+  <UserJourneys>
+    <UserJourney Id="SignIn">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="RpExchange" TechnicalProfileReferenceId="TP-Shared" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      </OrchestrationSteps>
+    </UserJourney>
+  </UserJourneys>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="SignIn" />
+    <TechnicalProfile Id="PolicyProfile">
+      <Protocol Name="OpenIdConnect" />
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="displayName" />
+        <OutputClaim ClaimTypeReferenceId="extension_loyaltyId" />
+      </OutputClaims>
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

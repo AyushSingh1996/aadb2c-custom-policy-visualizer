@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_OverrideExtensions">
+  <BasePolicy><TenantId>contoso.onmicrosoft.com</TenantId><PolicyId>B2C_1A_OverrideBase</PolicyId></BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="extension_loyaltyId"><DisplayName>Loyalty ID</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+    <Localization>
+      <SupportedLanguages><SupportedLanguage>en</SupportedLanguage></SupportedLanguages>
+      <LocalizedResources Id="api.signup.en">
+        <LocalizedStrings>
+          <LocalizedString ElementType="UxElement" StringId="heading">Extension Heading</LocalizedString>
+        </LocalizedStrings>
+      </LocalizedResources>
+    </Localization>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="TP-Shared">
+          <Metadata>
+            <Item Key="A">extension-one</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" DefaultValue="extension@example.com" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_loyaltyId" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="Validate-Extension" />
+          </ValidationTechnicalProfiles>
+        </TechnicalProfile>
+        <TechnicalProfile Id="Protocol-Swap">
+          <Protocol Name="Proprietary" Handler="ExtensionHandler" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://api.contoso.com/override</Item>
+          </Metadata>
+        </TechnicalProfile>
+        <TechnicalProfile Id="Validate-Extension"><Protocol Name="None" /></TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>

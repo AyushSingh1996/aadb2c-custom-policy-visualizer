@@ -1,0 +1,40 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "rules": {
+    "no-console": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/explicit-function-return-type": ["error", { "allowExpressions": true }]
+  },
+  "overrides": [
+    {
+      "files": ["packages/frontend/**/*.{ts,tsx}"],
+      "plugins": ["react", "react-hooks"],
+      "extends": ["plugin:react/recommended", "plugin:react-hooks/recommended"],
+      "rules": {
+        "react/react-in-jsx-scope": "off"
+      },
+      "settings": {
+        "react": { "version": "detect" }
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "@typescript-eslint/explicit-function-return-type": "off"
+      }
+    }
+  ],
+  "ignorePatterns": ["dist/", "node_modules/", "*.js", "*.mjs", "vite.config.ts"]
+}

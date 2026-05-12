@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy TenantId="contoso.onmicrosoft.com" PolicyId="B2C_1A_TrustFrameworkBase">
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <ClaimType Id="email"><DisplayName>Email</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="objectId"><DisplayName>Object ID</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="displayName"><DisplayName>Display Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="signInName"><DisplayName>Sign In Name</DisplayName><DataType>string</DataType></ClaimType>
+      <ClaimType Id="password"><DisplayName>Password</DisplayName><DataType>string</DataType></ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+          <DisplayName>Local Account Signin</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.localaccountsignin</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="signInName" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+          </OutputClaims>
+        </TechnicalProfile>
+        <TechnicalProfile Id="JwtIssuer">
+          <Protocol Name="OpenIdConnect" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="objectId" />
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+</TrustFrameworkPolicy>
